@@ -1,9 +1,12 @@
 package main
 
 import (
-	"fmt"
+	"bootdev-pokedex/repl"
 )
 
 func main() {
-	fmt.Println("Hello, World!")
+	repl.Start()
 }
+
+
+
