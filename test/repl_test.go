@@ -30,3 +30,7 @@ func TestCleanInput(t *testing.T) {
 		})
 	}
 }
+
+func TestCaching(t *testing.T) {
+
+}

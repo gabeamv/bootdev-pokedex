@@ -1,20 +1,20 @@
 package repl
 
 import (
+	"bootdev-pokedex/internal/pokeapi"
+	"bootdev-pokedex/internal/pokecache"
 	"encoding/json"
 	"fmt"
-	"io"
-	"net/http"
 	"os"
 )
 
-func commandExit(c *config) error {
+func commandExit(c *config, cache *pokecache.Cache) error {
 	fmt.Println("Closing the Pokedex... Goodbye!")
 	os.Exit(0)
 	return nil
 }
 
-func commandHelp(c *config) error {
+func commandHelp(c *config, cache *pokecache.Cache) error {
 	message := "Welcome to the Pokedex!\nUsage:\n\n"
 	for _, cmd := range getCommands() {
 		message += fmt.Sprintf("%s: %s\n", cmd.name, cmd.description)
@@ -23,44 +23,29 @@ func commandHelp(c *config) error {
 	return nil
 }
 
-func commandMap(c *config) error {
-	// Standard get request for location areas.
+func commandMap(c *config, cache *pokecache.Cache) error {
 	if c.Next == "" {
 		return fmt.Errorf("you are already at the end of the location areas")
 	}
 	fullUrl := c.Next
-	client := &http.Client{}
-	req, err := http.NewRequest("GET", fullUrl, nil)
-	if err != nil {
-		return fmt.Errorf("error creating new get request for location areas: %w", err)
+	var locationAreas pokeapi.LocationAreas
+	bytes, ok := cache.Get(fullUrl) // attempt to get the cached location areas
+	if !ok {                        // if we cannot get the cached location areas, make request
+		var err error
+		bytes, err = pokeapi.GetLocationAreas(fullUrl)
+		if err != nil {
+			return fmt.Errorf("error getting location areas: %w", err)
+		}
+		cache.Add(fullUrl, bytes) // cache the data
 	}
-	resp, err := client.Do(req)
-	if err != nil {
-		return fmt.Errorf("error getting location areas: %w", err)
-	}
-	defer resp.Body.Close()
-	bytes, err := io.ReadAll(resp.Body)
-	if err != nil {
-		return fmt.Errorf("error reading all the bytes of location areas: %w", err)
-	}
-	// Get the entire json.
-	var locationAreas struct {
-		Count    int    `json:"count"`
-		Next     string `json:"next"`
-		Previous string `json:"previous"`
-		Results  []struct {
-			Name string `json:"name"`
-			Url  string `json:"url"`
-		} `json:"results"`
-	}
-	err = json.Unmarshal(bytes, &locationAreas)
+	err := json.Unmarshal(bytes, &locationAreas)
 	if err != nil {
 		return fmt.Errorf("error unmarshalling location areas: %w", err)
 	}
 	if fullUrl == DOMAIN+"location-area" {
 		fmt.Printf("You are on the first page.\n\n")
 	}
-	// Iterate through the list of maps and display the names of location areas
+
 	for _, area := range locationAreas.Results {
 		fmt.Println(area.Name)
 	}
@@ -69,36 +54,21 @@ func commandMap(c *config) error {
 	return nil
 }
 
-func mapb(c *config) error {
+func mapb(c *config, cache *pokecache.Cache) error {
 	if c.Previous == "" {
 		return fmt.Errorf("error. you are already at the start of the location areas")
 	}
 	fullUrl := c.Previous
-	client := &http.Client{}
-	req, err := http.NewRequest("GET", fullUrl, nil)
-	if err != nil {
-		return fmt.Errorf("error creating new get request for location areas: %w", err)
+	var locationAreas pokeapi.LocationAreas
+	bytes, ok := cache.Get(fullUrl) // attempt to get the cached location areas
+	if !ok {                        // if we cannot get the cached location areas, make request
+		var err error
+		bytes, err = pokeapi.GetLocationAreas(fullUrl)
+		if err != nil {
+			return fmt.Errorf("error getting location areas: %w", err)
+		}
 	}
-	resp, err := client.Do(req)
-	if err != nil {
-		return fmt.Errorf("error getting location areas: %w", err)
-	}
-	defer resp.Body.Close()
-	bytes, err := io.ReadAll(resp.Body)
-	if err != nil {
-		return fmt.Errorf("error reading all the bytes of location areas: %w", err)
-	}
-	// Get the entire json.
-	var locationAreas struct {
-		Count    int    `json:"count"`
-		Next     string `json:"next"`
-		Previous string `json:"previous"`
-		Results  []struct {
-			Name string `json:"name"`
-			Url  string `json:"url"`
-		} `json:"results"`
-	}
-	err = json.Unmarshal(bytes, &locationAreas)
+	err := json.Unmarshal(bytes, &locationAreas)
 	if err != nil {
 		return fmt.Errorf("error unmarshalling location areas: %w", err)
 	}

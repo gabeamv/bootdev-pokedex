@@ -1,16 +1,23 @@
 package repl
 
 import (
+	"bootdev-pokedex/internal/pokecache"
 	"bufio"
 	"fmt"
 	"os"
 	"strings"
+	"time"
+)
+
+const (
+	CACHE_INT = 10 * time.Second // reap the cache every 10 seconds
 )
 
 func Start() {
 	commandMap := getCommands()
 	scanner := bufio.NewScanner(os.Stdin)
 	c := config{Previous: "", Next: fmt.Sprintf(DOMAIN + "location-area")} // config struct to keep track of the previous and next locations to read.
+	cache := pokecache.NewCache(CACHE_INT)
 	for {
 		fmt.Print("Pokedex > ")
 		scanner.Scan()
@@ -20,7 +27,7 @@ func Start() {
 			fmt.Println("Unknown command")
 			continue
 		}
-		err := command.callback(&c)
+		err := command.callback(&c, cache)
 		if err != nil {
 			fmt.Println(err)
 		}
