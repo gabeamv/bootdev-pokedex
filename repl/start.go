@@ -16,7 +16,7 @@ const (
 func Start() {
 	commandMap := getCommands()
 	scanner := bufio.NewScanner(os.Stdin)
-	c := config{Previous: "", Next: fmt.Sprintf(DOMAIN + "location-area")} // config struct to keep track of the previous and next locations to read.
+	c := config{Previous: "", Next: fmt.Sprintf(DOMAIN + START)} // config struct to keep track of the previous and next locations to read.
 	cache := pokecache.NewCache(CACHE_INT)
 	for {
 		fmt.Print("Pokedex > ")

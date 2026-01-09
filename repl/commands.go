@@ -37,12 +37,15 @@ func commandMap(c *config, cache *pokecache.Cache) error {
 			return fmt.Errorf("error getting location areas: %w", err)
 		}
 		cache.Add(fullUrl, bytes) // cache the data
+	} else {
+		fmt.Println("Cache being used.")
+		fmt.Println()
 	}
 	err := json.Unmarshal(bytes, &locationAreas)
 	if err != nil {
 		return fmt.Errorf("error unmarshalling location areas: %w", err)
 	}
-	if fullUrl == DOMAIN+"location-area" {
+	if fullUrl == DOMAIN+START {
 		fmt.Printf("You are on the first page.\n\n")
 	}
 
@@ -51,6 +54,7 @@ func commandMap(c *config, cache *pokecache.Cache) error {
 	}
 	c.Next = locationAreas.Next
 	c.Previous = locationAreas.Previous
+	fmt.Println(fullUrl)
 	return nil
 }
 
@@ -67,12 +71,16 @@ func mapb(c *config, cache *pokecache.Cache) error {
 		if err != nil {
 			return fmt.Errorf("error getting location areas: %w", err)
 		}
+		cache.Add(fullUrl, bytes) // cache the data
+	} else {
+		fmt.Println("Cache is being used.")
+		fmt.Println()
 	}
 	err := json.Unmarshal(bytes, &locationAreas)
 	if err != nil {
 		return fmt.Errorf("error unmarshalling location areas: %w", err)
 	}
-	if fullUrl == DOMAIN+"location-area?offset=0&limit=20" {
+	if fullUrl == DOMAIN+START {
 		fmt.Printf("You are on the first page.\n\n")
 	}
 	// Iterate through the list of maps and display the names of location areas
@@ -81,6 +89,7 @@ func mapb(c *config, cache *pokecache.Cache) error {
 	}
 	c.Next = locationAreas.Next
 	c.Previous = locationAreas.Previous
+	fmt.Println(fullUrl)
 	return nil
 }
 

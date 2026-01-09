@@ -1,8 +1,11 @@
 package test
 
 import (
+	"bootdev-pokedex/internal/pokecache"
 	"bootdev-pokedex/repl"
+	"reflect"
 	"testing"
+	"time"
 
 	"github.com/google/go-cmp/cmp"
 )
@@ -31,6 +34,21 @@ func TestCleanInput(t *testing.T) {
 	}
 }
 
-func TestCaching(t *testing.T) {
-
+func TestNewCache(t *testing.T) {
+	cases := map[string]struct {
+		input time.Duration
+		want  bool
+	}{
+		"new-cache-correct": {input: 10 * time.Second, want: true},
+	}
+	for name, tc := range cases {
+		t.Run(name, func(t *testing.T) {
+			cache := pokecache.NewCache(tc.input)
+			got := reflect.TypeOf(cache) == reflect.TypeOf(&pokecache.Cache{}) // check if the newly created cache is of correct type
+			diff := cmp.Diff(tc.want, got)
+			if diff != "" {
+				t.Fatal(diff)
+			}
+		})
+	}
 }
