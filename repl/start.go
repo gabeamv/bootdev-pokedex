@@ -16,18 +16,27 @@ const (
 func Start() {
 	commandMap := getCommands()
 	scanner := bufio.NewScanner(os.Stdin)
-	c := config{Previous: "", Next: fmt.Sprintf(DOMAIN + START)} // config struct to keep track of the previous and next locations to read.
+	c := config{Previous: "", Next: fmt.Sprintf(DOMAIN + PATH_AREA_START)} // config struct to keep track of the previous and next locations to read.
 	cache := pokecache.NewCache(CACHE_INT)
 	for {
 		fmt.Print("Pokedex > ")
 		scanner.Scan()
 		text := scanner.Text()
-		command, ok := commandMap[text]
+		cleanedText := CleanInput(text)
+		command, ok := commandMap[cleanedText[0]]
 		if !ok {
 			fmt.Println("Unknown command")
 			continue
 		}
-		err := command.callback(&c, cache)
+		var area string
+		if command.name == "explore" {
+			if len(cleanedText) < 2 {
+				fmt.Println("explore missing second argument")
+				continue
+			}
+			area = cleanedText[1]
+		}
+		err := command.callback(&c, cache, area)
 		if err != nil {
 			fmt.Println(err)
 		}
