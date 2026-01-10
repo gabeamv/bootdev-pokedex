@@ -176,6 +176,15 @@ func commandInspect(c *config, cache *pokecache.Cache, args ...string) error {
 	return nil
 }
 
+func commandPokedex(c *config, cache *pokecache.Cache, args ...string) error {
+	output := "Your Pokedex:\n"
+	for _, pokemon := range Pokedex {
+		output += fmt.Sprintf("\t- %v\n", pokemon.Name)
+	}
+	fmt.Println(output)
+	return nil
+}
+
 func getCommands() map[string]commands {
 	var commandMap = map[string]commands{
 		"exit": {
@@ -212,6 +221,11 @@ func getCommands() map[string]commands {
 			name:        "inspect",
 			description: "View the data of a caught pokemon from the Pokedex",
 			callback:    commandInspect,
+		},
+		"pokedex": {
+			name:        "pokedex",
+			description: "View all the pokemon that have been caught",
+			callback:    commandPokedex,
 		},
 	}
 	return commandMap
