@@ -13,13 +13,13 @@ import (
 
 var Pokedex = make(map[string]pokeapi.Pokemon)
 
-func commandExit(c *config, cache *pokecache.Cache, arg string) error {
+func commandExit(c *config, cache *pokecache.Cache, args ...string) error {
 	fmt.Println("Closing the Pokedex... Goodbye!")
 	os.Exit(0)
 	return nil
 }
 
-func commandHelp(c *config, cache *pokecache.Cache, arg string) error {
+func commandHelp(c *config, cache *pokecache.Cache, args ...string) error {
 	message := "Welcome to the Pokedex!\nUsage:\n\n"
 	for _, cmd := range getCommands() {
 		message += fmt.Sprintf("%s: %s\n", cmd.name, cmd.description)
@@ -28,7 +28,7 @@ func commandHelp(c *config, cache *pokecache.Cache, arg string) error {
 	return nil
 }
 
-func commandMap(c *config, cache *pokecache.Cache, arg string) error {
+func commandMap(c *config, cache *pokecache.Cache, args ...string) error {
 	if c.Next == "" {
 		return fmt.Errorf("you are already at the end of the location areas")
 	}
@@ -63,7 +63,7 @@ func commandMap(c *config, cache *pokecache.Cache, arg string) error {
 	return nil
 }
 
-func commandMapb(c *config, cache *pokecache.Cache, arg string) error {
+func commandMapb(c *config, cache *pokecache.Cache, args ...string) error {
 	if c.Previous == "" {
 		return fmt.Errorf("error. you are already at the start of the location areas")
 	}
@@ -98,8 +98,11 @@ func commandMapb(c *config, cache *pokecache.Cache, arg string) error {
 	return nil
 }
 
-func commandExplore(c *config, cache *pokecache.Cache, arg string) error {
-	area := arg
+func commandExplore(c *config, cache *pokecache.Cache, args ...string) error {
+	if len(args) == 1 {
+		return fmt.Errorf("error. missing location area argument.")
+	}
+	area := args[1]
 	fullUrl := DOMAIN + PATH_AREA + area
 	bytes, err := pokeapi.Get(fullUrl)
 	if err != nil {
@@ -116,8 +119,11 @@ func commandExplore(c *config, cache *pokecache.Cache, arg string) error {
 	return nil
 }
 
-func commandCatch(c *config, cache *pokecache.Cache, arg string) error {
-	pokemonName := arg
+func commandCatch(c *config, cache *pokecache.Cache, args ...string) error {
+	if len(args) == 1 {
+		return fmt.Errorf("error: missing pokemon name argument")
+	}
+	pokemonName := args[1]
 	fullUrl := DOMAIN + PATH_POKEMON + pokemonName
 	bytes, err := pokeapi.Get(fullUrl)
 	if err != nil {
@@ -149,8 +155,11 @@ func commandCatch(c *config, cache *pokecache.Cache, arg string) error {
 	return nil
 }
 
-func commandInspect(c *config, cache *pokecache.Cache, arg string) error {
-	pokemonName := arg
+func commandInspect(c *config, cache *pokecache.Cache, args ...string) error {
+	if len(args) == 1 {
+		return fmt.Errorf("error: missing pokemon name argument")
+	}
+	pokemonName := args[1]
 	if pokemon, captured := Pokedex[pokemonName]; captured {
 		output := fmt.Sprintf("Name: %v\nHeight: %v\nWeight: %v\nStats:\n", pokemon.Name, pokemon.Height, pokemon.Weight)
 		for _, pokeStat := range pokemon.Stats {

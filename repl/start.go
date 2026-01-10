@@ -28,15 +28,7 @@ func Start() {
 			fmt.Println("Unknown command")
 			continue
 		}
-		var arg1 string
-		if command.name == "explore" || command.name == "catch" || command.name == "inspect" {
-			if len(args) < 2 {
-				fmt.Println("missing second argument")
-				continue
-			}
-			arg1 = args[1]
-		}
-		err := command.callback(&c, cache, arg1)
+		err := command.callback(&c, cache, args...)
 		if err != nil {
 			fmt.Println(err)
 		}

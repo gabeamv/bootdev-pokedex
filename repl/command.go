@@ -12,5 +12,5 @@ type config struct {
 type commands struct {
 	name        string
 	description string
-	callback    func(*config, *pokecache.Cache, string) error
+	callback    func(*config, *pokecache.Cache, ...string) error
 }
