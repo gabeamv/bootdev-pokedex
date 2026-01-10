@@ -5,16 +5,21 @@ import (
 	"bootdev-pokedex/internal/pokecache"
 	"encoding/json"
 	"fmt"
+	"math/rand"
 	"os"
+	"strings"
+	"time"
 )
 
-func commandExit(c *config, cache *pokecache.Cache, area string) error {
+var Pokedex = make(map[string]pokeapi.Pokemon)
+
+func commandExit(c *config, cache *pokecache.Cache, arg string) error {
 	fmt.Println("Closing the Pokedex... Goodbye!")
 	os.Exit(0)
 	return nil
 }
 
-func commandHelp(c *config, cache *pokecache.Cache, area string) error {
+func commandHelp(c *config, cache *pokecache.Cache, arg string) error {
 	message := "Welcome to the Pokedex!\nUsage:\n\n"
 	for _, cmd := range getCommands() {
 		message += fmt.Sprintf("%s: %s\n", cmd.name, cmd.description)
@@ -23,7 +28,7 @@ func commandHelp(c *config, cache *pokecache.Cache, area string) error {
 	return nil
 }
 
-func commandMap(c *config, cache *pokecache.Cache, area string) error {
+func commandMap(c *config, cache *pokecache.Cache, arg string) error {
 	if c.Next == "" {
 		return fmt.Errorf("you are already at the end of the location areas")
 	}
@@ -58,7 +63,7 @@ func commandMap(c *config, cache *pokecache.Cache, area string) error {
 	return nil
 }
 
-func commandMapb(c *config, cache *pokecache.Cache, area string) error {
+func commandMapb(c *config, cache *pokecache.Cache, arg string) error {
 	if c.Previous == "" {
 		return fmt.Errorf("error. you are already at the start of the location areas")
 	}
@@ -78,7 +83,7 @@ func commandMapb(c *config, cache *pokecache.Cache, area string) error {
 	}
 	err := json.Unmarshal(bytes, &locationAreas)
 	if err != nil {
-		return fmt.Errorf("error unmarshalling location areas: %w", err)
+		return fmt.Errorf("error unmarshalling bytes to pokeapi.LocationAreas: %w", err)
 	}
 	if fullUrl == DOMAIN+PATH_AREA_START {
 		fmt.Printf("You are on the first page.\n\n")
@@ -93,7 +98,8 @@ func commandMapb(c *config, cache *pokecache.Cache, area string) error {
 	return nil
 }
 
-func commandExplore(c *config, cache *pokecache.Cache, area string) error {
+func commandExplore(c *config, cache *pokecache.Cache, arg string) error {
+	area := arg
 	fullUrl := DOMAIN + PATH_AREA + area
 	bytes, err := pokeapi.Get(fullUrl)
 	if err != nil {
@@ -102,10 +108,61 @@ func commandExplore(c *config, cache *pokecache.Cache, area string) error {
 	var locationArea pokeapi.LocationArea
 	err = json.Unmarshal(bytes, &locationArea)
 	if err != nil {
-		return fmt.Errorf("error unmarshalling bytes to LocationArea: %w", err)
+		return fmt.Errorf("error unmarshalling bytes to pokeapi.LocationArea: %w", err)
 	}
 	for _, pokemon := range locationArea.PokemonEncounters {
 		fmt.Println(pokemon.Pokemon.Name)
+	}
+	return nil
+}
+
+func commandCatch(c *config, cache *pokecache.Cache, arg string) error {
+	pokemonName := arg
+	fullUrl := DOMAIN + PATH_POKEMON + pokemonName
+	bytes, err := pokeapi.Get(fullUrl)
+	if err != nil {
+		return fmt.Errorf("error requesting the pokemon '%s': %w", pokemonName, err)
+	}
+	var pokemon pokeapi.Pokemon
+	err = json.Unmarshal(bytes, &pokemon)
+	if err != nil {
+		return fmt.Errorf("error unmarshalling bytes to pokeapi.Pokemon")
+	}
+	fmt.Printf("Throwing a Pokeball at %s...\n", pokemon.Name)
+	target := pokemon.BaseExperience
+	var catch int
+	for i := 1; i < 4; i++ {
+		catch += rand.Intn(pokeapi.MAX_ROLL + 1)
+		waitOutput := strings.Repeat(".", i)
+		fmt.Println(waitOutput)
+		time.Sleep(time.Second)
+	}
+	if catch >= target { // if pokemon is caught...
+		fmt.Printf("You have captured %s!\n", pokemonName)  // output that pokemon has been caught
+		if _, captured := Pokedex[pokemonName]; !captured { // if first time capturing
+			Pokedex[pokemonName] = pokemon // store in pokedex
+			fmt.Printf("%s's data has been stored in your Pokedex.\n", pokemonName)
+		}
+		return nil
+	}
+	fmt.Printf("%s broke free...\n", pokemonName)
+	return nil
+}
+
+func commandInspect(c *config, cache *pokecache.Cache, arg string) error {
+	pokemonName := arg
+	if pokemon, captured := Pokedex[pokemonName]; captured {
+		output := fmt.Sprintf("Name: %v\nHeight: %v\nWeight: %v\nStats:\n", pokemon.Name, pokemon.Height, pokemon.Weight)
+		for _, pokeStat := range pokemon.Stats {
+			output += fmt.Sprintf("\t-%v: %v\n", pokeStat.Stat.Name, pokeStat.BaseStat)
+		}
+		output += "Types:\n"
+		for _, pokeType := range pokemon.Types {
+			output += fmt.Sprintf("\t-%v\n", pokeType.Type.Name)
+		}
+		fmt.Print(output)
+	} else {
+		fmt.Println("You have not caught that Pokemon...")
 	}
 	return nil
 }
@@ -136,6 +193,16 @@ func getCommands() map[string]commands {
 			name:        "explore",
 			description: "Display the pokemon located in a specific area",
 			callback:    commandExplore,
+		},
+		"catch": {
+			name:        "catch",
+			description: "Catch a specific pokemon",
+			callback:    commandCatch,
+		},
+		"inspect": {
+			name:        "inspect",
+			description: "View the data of a caught pokemon from the Pokedex",
+			callback:    commandInspect,
 		},
 	}
 	return commandMap

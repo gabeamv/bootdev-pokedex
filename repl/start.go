@@ -22,21 +22,21 @@ func Start() {
 		fmt.Print("Pokedex > ")
 		scanner.Scan()
 		text := scanner.Text()
-		cleanedText := CleanInput(text)
-		command, ok := commandMap[cleanedText[0]]
+		args := CleanInput(text)
+		command, ok := commandMap[args[0]]
 		if !ok {
 			fmt.Println("Unknown command")
 			continue
 		}
-		var area string
-		if command.name == "explore" {
-			if len(cleanedText) < 2 {
-				fmt.Println("explore missing second argument")
+		var arg1 string
+		if command.name == "explore" || command.name == "catch" || command.name == "inspect" {
+			if len(args) < 2 {
+				fmt.Println("missing second argument")
 				continue
 			}
-			area = cleanedText[1]
+			arg1 = args[1]
 		}
-		err := command.callback(&c, cache, area)
+		err := command.callback(&c, cache, arg1)
 		if err != nil {
 			fmt.Println(err)
 		}
