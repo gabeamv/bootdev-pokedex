@@ -43,8 +43,7 @@ func commandMap(c *config, cache *pokecache.Cache, args ...string) error {
 		}
 		cache.Add(fullUrl, bytes) // cache the data
 	} else {
-		fmt.Println("Cache being used.")
-		fmt.Println()
+		fmt.Print("Cache is being used.\n\n")
 	}
 	err := json.Unmarshal(bytes, &locationAreas)
 	if err != nil {
@@ -78,8 +77,7 @@ func commandMapb(c *config, cache *pokecache.Cache, args ...string) error {
 		}
 		cache.Add(fullUrl, bytes) // cache the data
 	} else {
-		fmt.Println("Cache is being used.")
-		fmt.Println()
+		fmt.Print("Cache is being used.\n\n")
 	}
 	err := json.Unmarshal(bytes, &locationAreas)
 	if err != nil {
@@ -104,12 +102,19 @@ func commandExplore(c *config, cache *pokecache.Cache, args ...string) error {
 	}
 	area := args[1]
 	fullUrl := DOMAIN + PATH_AREA + area
-	bytes, err := pokeapi.Get(fullUrl)
-	if err != nil {
-		return fmt.Errorf("error getting the specific location area: %w", err)
+	bytes, ok := cache.Get(fullUrl)
+	if !ok {
+		var err error
+		bytes, err = pokeapi.Get(fullUrl)
+		if err != nil {
+			return fmt.Errorf("error getting the specifc location area: %w", err)
+		}
+		cache.Add(fullUrl, bytes)
+	} else {
+		fmt.Print("Cache is being used.\n\n")
 	}
 	var locationArea pokeapi.LocationArea
-	err = json.Unmarshal(bytes, &locationArea)
+	err := json.Unmarshal(bytes, &locationArea)
 	if err != nil {
 		return fmt.Errorf("error unmarshalling bytes to pokeapi.LocationArea: %w", err)
 	}
@@ -125,12 +130,19 @@ func commandCatch(c *config, cache *pokecache.Cache, args ...string) error {
 	}
 	pokemonName := args[1]
 	fullUrl := DOMAIN + PATH_POKEMON + pokemonName
-	bytes, err := pokeapi.Get(fullUrl)
-	if err != nil {
-		return fmt.Errorf("error requesting the pokemon '%s': %w", pokemonName, err)
+	bytes, ok := cache.Get(fullUrl)
+	if !ok {
+		var err error
+		bytes, err = pokeapi.Get(fullUrl)
+		if err != nil {
+			return fmt.Errorf("error requesting the pokemon '%s': %w", pokemonName, err)
+		}
+		cache.Add(fullUrl, bytes)
+	} else {
+		fmt.Print("Cache being used.\n\n")
 	}
 	var pokemon pokeapi.Pokemon
-	err = json.Unmarshal(bytes, &pokemon)
+	err := json.Unmarshal(bytes, &pokemon)
 	if err != nil {
 		return fmt.Errorf("error unmarshalling bytes to pokeapi.Pokemon")
 	}

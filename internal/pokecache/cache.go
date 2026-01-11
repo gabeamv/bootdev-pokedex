@@ -43,11 +43,11 @@ func (c *Cache) Get(entryName string) ([]byte, bool) {
 	}
 }
 
-func (c *Cache) reapLoop(interval time.Duration, passed time.Time) {
+func (c *Cache) reapLoop(interval time.Duration, now time.Time) {
 	for entryName, cacheEntry := range c.Entries {
 		c.Mu.Lock()
-		Duration := passed.Sub(cacheEntry.CreatedAt) // calculate the Duration between now and when the cache entry was created
-		if Duration > interval {                     // if the cache is older than the interval
+		duration := now.Sub(cacheEntry.CreatedAt) // calculate the Duration between now and when the cache entry was created
+		if duration > interval {                  // if the cache is older than the interval
 			delete(c.Entries, entryName)
 		}
 		c.Mu.Unlock()
