@@ -1,4 +1,4 @@
-module bootdev-pokedex
+module github.com/gabeamv/bootdev-pokedex
 
 go 1.25.5
 

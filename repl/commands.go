@@ -1,14 +1,15 @@
 package repl
 
 import (
-	"bootdev-pokedex/internal/pokeapi"
-	"bootdev-pokedex/internal/pokecache"
 	"encoding/json"
 	"fmt"
 	"math/rand"
 	"os"
 	"strings"
 	"time"
+
+	"github.com/gabeamv/bootdev-pokedex/internal/pokeapi"
+	"github.com/gabeamv/bootdev-pokedex/internal/pokecache"
 )
 
 var Pokedex = make(map[string]pokeapi.Pokemon)

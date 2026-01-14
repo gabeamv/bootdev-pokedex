@@ -1,12 +1,13 @@
 package repl
 
 import (
-	"bootdev-pokedex/internal/pokecache"
 	"bufio"
 	"fmt"
 	"os"
 	"strings"
 	"time"
+
+	"github.com/gabeamv/bootdev-pokedex/internal/pokecache"
 )
 
 const (

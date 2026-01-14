@@ -1,7 +1,7 @@
 package repl
 
 import (
-	"bootdev-pokedex/internal/pokecache"
+	"github.com/gabeamv/bootdev-pokedex/internal/pokecache"
 )
 
 type config struct {

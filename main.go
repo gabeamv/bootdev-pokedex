@@ -1,7 +1,7 @@
 package main
 
 import (
-	"bootdev-pokedex/repl"
+	"github.com/gabeamv/bootdev-pokedex/repl"
 )
 
 func main() {

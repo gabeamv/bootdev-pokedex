@@ -1,11 +1,12 @@
 package test
 
 import (
-	"bootdev-pokedex/internal/pokecache"
-	"bootdev-pokedex/repl"
 	"reflect"
 	"testing"
 	"time"
+
+	"github.com/gabeamv/bootdev-pokedex/internal/pokecache"
+	"github.com/gabeamv/bootdev-pokedex/repl"
 
 	"github.com/google/go-cmp/cmp"
 )
